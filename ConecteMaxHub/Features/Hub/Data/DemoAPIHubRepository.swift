@@ -15,10 +15,16 @@ private struct ContractDTO: Decodable {
 private struct InternetDTO: Decodable { let online: Bool; let message: String; var domain: InternetStatus { InternetStatus(online: online, message: message) } }
 private struct ServiceDTO: Decodable { let id: String; let type: String; let plan: String; let status: String; var domain: ContractService { ContractService(id: id, name: plan, category: type) } }
 
-private struct BillingDTO: Decodable { let open: [InvoiceDTO]; let paid: [InvoiceDTO]; var domain: BillingSummary { BillingSummary(open: open.map(\.domain), paid: paid.map(\.domain)) } }
+private struct BillingDTO: Decodable {
+    let open: [InvoiceDTO]?
+    let paid: [InvoiceDTO]?
+    var domain: BillingSummary {
+        BillingSummary(open: (open ?? []).map(\.domain), paid: (paid ?? []).map(\.domain))
+    }
+}
 private struct InvoiceDTO: Decodable {
-    let id: String; let contractId: String; let dueDate: String; let paidAt: String?; let amount: Double; let status: String; let barcode: String?; let pix: String?; let invoiceUrl: String?
-    var domain: Invoice { Invoice(id: id, contractId: contractId, dueDate: dueDate, paidAt: paidAt, amount: amount, status: status, barcode: barcode, pix: pix, invoiceURL: invoiceUrl) }
+    let id: String?; let contractId: String?; let dueDate: String?; let paidAt: String?; let amount: Double?; let status: String?; let barcode: String?; let pix: String?; let invoiceUrl: String?
+    var domain: Invoice { Invoice(id: id ?? "", contractId: contractId ?? "", dueDate: dueDate ?? "", paidAt: paidAt, amount: amount ?? 0, status: status ?? "", barcode: barcode, pix: pix, invoiceURL: invoiceUrl) }
 }
 
 private struct TrafficDTO: Decodable {
@@ -70,15 +76,6 @@ private struct OfflineSupportDTO: Decodable { let message: String }
         async let cameraRequest: CameraDTO? = optional("camera/patio")
         let (traffic, tickets, notifications, addOns, weather, camera) = await (trafficRequest, ticketsRequest, notificationsRequest, addOnsRequest, weatherRequest, cameraRequest)
 
-        let selectedBilling = BillingSummary(
-            open: billing.open
-                .filter { selectedId == nil || $0.contractId == selectedId }
-                .map(\.domain),
-            paid: billing.paid
-                .filter { selectedId == nil || $0.contractId == selectedId }
-                .map(\.domain)
-        )
-
         return Hub(
             name: me.name.isEmpty ? catalog.name : me.name,
             plan: catalog.plan,
@@ -87,7 +84,9 @@ private struct OfflineSupportDTO: Decodable { let message: String }
             modules: catalog.modules.map(\.domain),
             contracts: me.contracts.map(\.domain),
             selectedContractId: selectedId,
-            billing: selectedBilling,
+            // The API already scopes this endpoint to the selected contract,
+            // matching the Android client. Do not apply a second local filter.
+            billing: billing.domain,
             traffic: traffic?.domain,
             supportTickets: tickets?.tickets.map(\.domain) ?? [],
             notifications: notifications?.notifications.map(\.domain) ?? [],
