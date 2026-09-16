@@ -74,9 +74,9 @@ private struct InvoiceCard: View {
     let copy: (String?, String) -> Void
     private var isOpen: Bool { invoice.status.lowercased().contains("abert") || invoice.status.lowercased().contains("venc") }
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        VStack(alignment: .leading, spacing: 14) {
             Button(action: onTap) {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Fatura de \(dateLabel(invoice.dueDate))").font(.title3).foregroundStyle(HubStyle.medium)
                     HStack(alignment: .firstTextBaseline, spacing: 14) {
                         Text(currency(invoice.amount)).font(.system(size: 32, weight: .regular)).foregroundStyle(HubStyle.ink)
@@ -86,7 +86,7 @@ private struct InvoiceCard: View {
                 }.frame(maxWidth: .infinity, alignment: .leading)
             }.buttonStyle(.plain)
             if expanded && isOpen {
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     InvoiceAction(title: "Código de barras", filled: true) { copy(invoice.barcode, "Código de barras") }
                     InvoiceAction(title: "Pix Copia e Cola", filled: true) { copy(invoice.pix, "Pix Copia e Cola") }
                     if let value = invoice.invoiceURL, let url = URL(string: value) {
@@ -95,8 +95,10 @@ private struct InvoiceCard: View {
                 }
             }
         }
-        .padding(26)
-        .background(.white, in: RoundedRectangle(cornerRadius: 28))
+        .padding(20)
+        .background(Color(red: 0.89, green: 0.93, blue: 0.98), in: RoundedRectangle(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).stroke(HubStyle.gray, lineWidth: 1.2))
+        .shadow(color: .black.opacity(0.09), radius: 7, y: 4)
     }
 }
 
@@ -106,7 +108,7 @@ private struct InvoiceAction: View {
     let action: () -> Void
     var body: some View {
         Button(action: action) {
-            Text(title).font(.headline.bold()).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 18).background(HubStyle.dark, in: Capsule())
+            Text(title).font(.headline.bold()).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 15).background(HubStyle.dark, in: Capsule())
         }.buttonStyle(.plain)
     }
 }
