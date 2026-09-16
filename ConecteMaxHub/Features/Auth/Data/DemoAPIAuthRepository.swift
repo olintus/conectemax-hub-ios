@@ -38,7 +38,15 @@ struct TokenDTO: Decodable { let accessToken: String; let refreshToken: String; 
         do { try await refresh(); return true }
         catch let error as APIError where error.status == 401 { return false }
     }
-    func authorized<T: Decodable>(_ path: String, body: [String: String]? = nil) async throws -> T {
+    func authorized<T: Decodable>(_ path: String) async throws -> T {
+        if let access {
+            do { return try await api.request(path, access: access) }
+            catch let error as APIError where error.status == 401 { /* Refresh once. */ }
+        }
+        try await refresh()
+        return try await api.request(path, access: access)
+    }
+    func authorized<T: Decodable, Body: Encodable>(_ path: String, body: Body) async throws -> T {
         if let access {
             do { return try await api.request(path, body: body, access: access) }
             catch let error as APIError where error.status == 401 { /* Refresh once. */ }

@@ -9,11 +9,22 @@ struct MessageDTO: Codable { let message: String }
 struct APIClient {
     let baseURL: URL
     var session: URLSession = .shared
-    func request<T: Decodable>(_ path: String, body: [String: String]? = nil, access: String? = nil) async throws -> T {
-        var request = URLRequest(url: baseURL.appendingPathComponent(path))
+    func request<T: Decodable>(_ path: String, access: String? = nil) async throws -> T {
+        try await send(path, method: "GET", body: Optional<String>.none, access: access)
+    }
+
+    func request<T: Decodable, Body: Encodable>(_ path: String, body: Body, access: String? = nil) async throws -> T {
+        try await send(path, method: "POST", body: body, access: access)
+    }
+
+    private func send<T: Decodable, Body: Encodable>(_ path: String, method: String, body: Body?, access: String?) async throws -> T {
+        guard let url = URL(string: path, relativeTo: baseURL) else {
+            throw APIError(status: 0, message: "Endereço da solicitação inválido.")
+        }
+        var request = URLRequest(url: url)
         request.timeoutInterval = 20
         request.cachePolicy = .reloadIgnoringLocalCacheData
-        request.httpMethod = body == nil ? "GET" : "POST"
+        request.httpMethod = method
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if let access { request.setValue("Bearer \(access)", forHTTPHeaderField: "Authorization") }
         if let body { request.httpBody = try JSONEncoder().encode(body) }

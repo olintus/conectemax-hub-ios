@@ -1,16 +1,95 @@
 import Foundation
 
-struct HubDTO: Decodable {
-    let name: String; let plan: String; let status: String; let notice: String; let modules: [ModuleDTO]
-    var domain: Hub { Hub(name: name, plan: plan, status: status, notice: notice, modules: modules.map(\.domain)) }
-}
-struct ModuleDTO: Decodable {
+private struct CatalogDTO: Decodable { let name: String; let plan: String; let status: String; let notice: String; let modules: [ModuleDTO] }
+private struct ModuleDTO: Decodable {
     let id: String; let title: String; let subtitle: String; let category: String; let icon: String; let items: [ItemDTO]
-    var domain: HubModule { HubModule(id: id, title: title, subtitle: subtitle, category: category, icon: icon, items: items.map { HubItem(title: $0.title, detail: $0.detail, action: $0.action) }) }
+    var domain: HubModule { HubModule(id: id, title: title, subtitle: subtitle, category: category, icon: icon, items: items.map(\.domain)) }
 }
-struct ItemDTO: Decodable { let title: String; let detail: String; let action: String }
+private struct ItemDTO: Decodable { let title: String; let detail: String; let action: String; var domain: HubItem { HubItem(title: title, detail: detail, action: action) } }
+
+private struct MeDTO: Decodable { let name: String; let selectedContractId: String?; let contracts: [ContractDTO] }
+private struct ContractDTO: Decodable {
+    let id: String; let status: Int; let statusLabel: String; let city: String; let address: String; let internet: InternetDTO?; let services: [ServiceDTO]
+    var domain: CustomerContract { CustomerContract(id: id, status: String(status), statusLabel: statusLabel, city: city, address: address, internet: internet?.domain, services: services.map(\.domain)) }
+}
+private struct InternetDTO: Decodable { let online: Bool; let message: String; var domain: InternetStatus { InternetStatus(online: online, message: message) } }
+private struct ServiceDTO: Decodable { let id: String; let type: String; let plan: String; let status: String; var domain: ContractService { ContractService(id: id, name: plan, category: type) } }
+
+private struct BillingDTO: Decodable { let open: [InvoiceDTO]; let paid: [InvoiceDTO]; var domain: BillingSummary { BillingSummary(open: open.map(\.domain), paid: paid.map(\.domain)) } }
+private struct InvoiceDTO: Decodable {
+    let id: String; let contractId: String; let dueDate: String; let paidAt: String?; let amount: Double; let status: String; let barcode: String?; let pix: String?; let invoiceUrl: String?
+    var domain: Invoice { Invoice(id: id, contractId: contractId, dueDate: dueDate, paidAt: paidAt, amount: amount, status: status, barcode: barcode, pix: pix, invoiceURL: invoiceUrl) }
+}
+
+private struct TrafficDTO: Decodable {
+    let contractId: String; let from: String; let to: String; let totalBytes: Double; let days: [TrafficDayDTO]
+    var domain: TrafficSummary { TrafficSummary(contractId: contractId, from: from, to: to, totalBytes: totalBytes, days: days.map(\.domain)) }
+}
+private struct TrafficDayDTO: Decodable { let date: String; let bytes: Double; var domain: TrafficDay { TrafficDay(date: date, bytes: bytes) } }
+
+private struct TicketsDTO: Decodable { let tickets: [TicketDTO] }
+private struct TicketDTO: Decodable {
+    let id: String; let `protocol`: String?; let description: String; let reason: String?; let plan: String?; let observation: String?; let status: String; let createdAt: String; let scheduledAt: String?; let closedAt: String?; let open: Bool
+    var domain: SupportTicket { SupportTicket(id: id, protocolNumber: `protocol`, description: description, reason: reason, plan: plan, observation: observation, status: status, createdAt: createdAt, scheduledAt: scheduledAt, closedAt: closedAt, open: open) }
+}
+
+private struct NotificationsDTO: Decodable { let notifications: [NotificationDTO] }
+private struct NotificationDTO: Decodable { let id: String; let title: String; let body: String; let sentAt: Double; var domain: AppNotification { AppNotification(id: id, title: title, body: body, sentAt: Date(timeIntervalSince1970: sentAt / (sentAt > 10_000_000_000 ? 1_000 : 1)).ISO8601Format()) } }
+
+private struct AddOnsDTO: Decodable { let contractId: String?; let offers: [OfferDTO]; let requests: [AddOnRequestDTO]; var domain: AddOnsSummary { AddOnsSummary(contractId: contractId, offers: offers.map(\.domain), requests: requests.map(\.domain)) } }
+private struct OfferDTO: Decodable { let id: String; let title: String; let price: Double; let previousPrice: Double?; let highlights: [String]; var domain: AddOnOffer { AddOnOffer(id: id, title: title, price: price, previousPrice: previousPrice, highlights: highlights) } }
+private struct AddOnRequestDTO: Decodable {
+    let id: String; let contractId: String; let offerId: String; let offerTitle: String; let amount: Double; let status: String; let createdAt: Double; let title: String; let message: String
+    var domain: AddOnRequest { AddOnRequest(id: id, contractId: contractId, offerId: offerId, offerTitle: offerTitle, amount: amount, status: status, createdAt: Date(timeIntervalSince1970: createdAt / (createdAt > 10_000_000_000 ? 1_000 : 1)).ISO8601Format(), title: title, message: message) }
+}
+private struct AddOnRequestPayload: Encodable { let offerId: String; let confirmed: Bool }
+
 @MainActor final class DemoAPIHubRepository: HubRepository {
     let auth: DemoAPIAuthRepository
     init(auth: DemoAPIAuthRepository) { self.auth = auth }
-    func load() async throws -> Hub { let dto: HubDTO = try await auth.authorized("hub"); return dto.domain }
+
+    func load() async throws -> Hub {
+        async let catalogRequest: CatalogDTO = auth.authorized("hub")
+        async let meRequest: MeDTO = auth.authorized("me")
+        async let billingRequest: BillingDTO = auth.authorized("billing")
+        let (catalog, me, billing) = try await (catalogRequest, meRequest, billingRequest)
+
+        let selectedId = me.selectedContractId ?? me.contracts.first?.id
+        async let trafficRequest: TrafficDTO? = optional("traffic")
+        async let ticketsRequest: TicketsDTO? = optional("support/tickets")
+        async let notificationsRequest: NotificationsDTO? = optional("notifications")
+        async let addOnsRequest: AddOnsDTO? = optional("addons")
+        let (traffic, tickets, notifications, addOns) = await (trafficRequest, ticketsRequest, notificationsRequest, addOnsRequest)
+
+        return Hub(
+            name: me.name.isEmpty ? catalog.name : me.name,
+            plan: catalog.plan,
+            status: catalog.status,
+            notice: catalog.notice,
+            modules: catalog.modules.map(\.domain),
+            contracts: me.contracts.map(\.domain),
+            selectedContractId: selectedId,
+            billing: billing.domain,
+            traffic: traffic?.domain,
+            supportTickets: tickets?.tickets.map(\.domain) ?? [],
+            notifications: notifications?.notifications.map(\.domain) ?? [],
+            addOns: addOns?.domain ?? AddOnsSummary(contractId: selectedId, offers: [], requests: [])
+        )
+    }
+
+    func traffic(month: String) async throws -> TrafficSummary {
+        let response: TrafficDTO = try await auth.authorized("traffic?month=\(month)")
+        return response.domain
+    }
+
+    func selectContract(_ contractId: String) async throws {
+        let _: MessageDTO = try await auth.authorized("contracts/select", body: ["contractId": contractId])
+    }
+
+    func requestAddOn(_ offerId: String) async throws -> AddOnRequest {
+        let response: AddOnRequestDTO = try await auth.authorized("addons/request", body: AddOnRequestPayload(offerId: offerId, confirmed: true))
+        return response.domain
+    }
+
+    private func optional<T: Decodable>(_ path: String) async -> T? { try? await auth.authorized(path) }
 }

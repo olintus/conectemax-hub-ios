@@ -33,6 +33,24 @@ import Observation
     func login(_ password: String) { run { try await self.auth.login(cpf: self.cpf, password: password); try await self.enter() } }
     func enroll(_ password: String, _ confirmation: String) { run { try await self.auth.enroll(grant: self.grant, password: password, confirmation: confirmation); self.grant = ""; try await self.enter() } }
     func reload() { run { self.hub = try await self.repository.load() } }
+    func loadTraffic(month: String) {
+        run {
+            let traffic = try await self.repository.traffic(month: month)
+            guard let hub = self.hub else { return }
+            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: hub.addOns)
+        }
+    }
+    func selectContract(_ contractId: String) {
+        run { try await self.repository.selectContract(contractId); self.hub = try await self.repository.load() }
+    }
+    func requestAddOn(_ offerId: String) {
+        run {
+            let request = try await self.repository.requestAddOn(offerId)
+            guard let hub = self.hub else { return }
+            let addOns = AddOnsSummary(contractId: hub.addOns.contractId, offers: hub.addOns.offers, requests: [request] + hub.addOns.requests)
+            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: hub.traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: addOns)
+        }
+    }
     func logout() { run { try await self.auth.logout(); self.stage = "cpf"; self.hub = nil } }
     func changePassword(_ current: String, _ password: String, _ confirmation: String) {
         run { try await self.auth.changePassword(current: current, password: password, confirmation: confirmation); self.stage = "cpf"; self.hub = nil }
