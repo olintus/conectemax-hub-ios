@@ -110,7 +110,7 @@ private struct HomeInvoiceCard: View {
     private var invoice: Invoice? { open ?? paid }
     var body: some View {
         NavigationLink(value: "billing") {
-            HubCard { HStack(alignment: .center) {
+            HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Última fatura").font(.subheadline).foregroundStyle(HubStyle.medium)
                     if let invoice {
@@ -119,8 +119,13 @@ private struct HomeInvoiceCard: View {
                     } else { Text("Ainda não foi gerada uma fatura no período").font(.headline) }
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: 22) { Label(open == nil ? "Ver faturas" : "Pagar fatura", systemImage: "viewfinder").font(.headline.bold()).foregroundStyle(.white).padding(.horizontal, 18).padding(.vertical, 14).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.headline.bold()).foregroundStyle(HubStyle.blue) }
-            } }.frame(minHeight: 210)
+                VStack(alignment: .trailing, spacing: 14) { Label(open == nil ? "Ver faturas" : "Pagar fatura", systemImage: "viewfinder").font(.headline.bold()).foregroundStyle(.white).padding(.horizontal, 16).padding(.vertical, 11).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.headline.bold()).foregroundStyle(HubStyle.blue) }
+            }
+            .padding(20)
+            .frame(minHeight: 164)
+            .background(.white, in: RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(HubStyle.gray, lineWidth: 1))
+            .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
         }.buttonStyle(.plain)
     }
 }
