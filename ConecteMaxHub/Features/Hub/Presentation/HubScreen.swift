@@ -123,7 +123,7 @@ private struct HomeInvoiceCard: View {
             }
             .padding(20)
             .frame(minHeight: 164)
-            .background(.white, in: RoundedRectangle(cornerRadius: 20))
+            .background(Color(red: 0.89, green: 0.93, blue: 0.98), in: RoundedRectangle(cornerRadius: 20))
             .overlay(RoundedRectangle(cornerRadius: 20).stroke(HubStyle.gray, lineWidth: 1))
             .shadow(color: .black.opacity(0.10), radius: 8, y: 4)
         }.buttonStyle(.plain)
