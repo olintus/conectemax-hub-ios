@@ -26,84 +26,29 @@ struct WeatherDetailsScreen: View {
     var body: some View { ScrollView { VStack(alignment: .leading, spacing: 16) { Text("Clima Poço Fundo").font(.largeTitle.bold()); if let weather { LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) { MetricCard(title: "Temperatura", value: weather.temperature.map { metric($0, "°C") } ?? "—", icon: "thermometer.medium"); MetricCard(title: "Umidade", value: weather.humidity.map { metric($0, "%") } ?? "—", icon: "humidity"); MetricCard(title: "Pressão", value: weather.pressure.map { metric($0, " hPa") } ?? "—", icon: "gauge"); MetricCard(title: "Vento", value: weather.windSpeed.map { metric($0, " km/h") } ?? "—", icon: "wind"); MetricCard(title: "Chuva", value: weather.rainTotal.map { metric($0, " mm") } ?? "—", icon: "cloud.rain"); MetricCard(title: "Radiação", value: weather.radiation.map { metric($0, " W/m²") } ?? "—", icon: "sun.max") } } else { EmptyCard(icon: "cloud", text: "Dados da estação indisponíveis no momento.") }; if let camera, let url = URL(string: camera.hlsURL) { VStack(alignment: .leading, spacing: 10) { HStack { Text(camera.title).font(.title3.bold()); Spacer(); Label("AO VIVO", systemImage: "dot.radiowaves.left.and.right").font(.caption.bold()).foregroundStyle(.green) }; LiveCameraPlayer(url: url).frame(height: 220).clipShape(RoundedRectangle(cornerRadius: 20)) } } }.padding(20) }.navigationTitle("Estação").navigationBarTitleDisplayMode(.inline) }
 }
 
-private struct LiveCameraPlayer: UIViewControllerRepresentable {
+private struct LiveCameraPlayer: View {
     let url: URL
+    @State private var player: AVPlayer
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(url: url)
+    init(url: URL) {
+        self.url = url
+        _player = State(initialValue: AVPlayer(url: url))
     }
 
-    func makeUIViewController(context: Context) -> AVPlayerViewController {
-        let controller = AVPlayerViewController()
-        controller.player = context.coordinator.player
-        controller.showsPlaybackControls = false
-        controller.videoGravity = .resizeAspectFill
-        context.coordinator.start()
-        return controller
-    }
-
-    func updateUIViewController(_ controller: AVPlayerViewController, context: Context) {
-        context.coordinator.update(url: url)
-    }
-
-    static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
-        coordinator.stop()
-    }
-
-    final class Coordinator: NSObject {
-        let player = AVPlayer()
-        private var currentURL: URL
-        private var statusObservation: NSKeyValueObservation?
-        private var endObserver: NSObjectProtocol?
-
-        init(url: URL) {
-            currentURL = url
-            super.init()
-            player.actionAtItemEnd = .none
-        }
-
-        func start() {
-            replaceStream(with: currentURL)
-        }
-
-        func update(url: URL) {
-            guard url != currentURL else {
+    var body: some View {
+        VideoPlayer(player: player)
+            .onAppear {
                 player.play()
-                return
             }
-            currentURL = url
-            replaceStream(with: url)
-        }
-
-        func stop() {
-            player.pause()
-            statusObservation?.invalidate()
-            if let endObserver {
-                NotificationCenter.default.removeObserver(endObserver)
+            .onChange(of: url) { _, _ in
+                player.replaceCurrentItem(with: AVPlayerItem(url: url))
+                player.play()
             }
-        }
-
-        private func replaceStream(with url: URL) {
-            statusObservation?.invalidate()
-            if let endObserver {
-                NotificationCenter.default.removeObserver(endObserver)
+            .onDisappear {
+                player.pause()
             }
-
-            let item = AVPlayerItem(url: url)
-            player.replaceCurrentItem(with: item)
-            statusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
-                guard item.status == .readyToPlay else { return }
-                DispatchQueue.main.async {
-                    self?.player.play()
-                }
-            }
-            endObserver = NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: item, queue: .main) { [weak self] _ in
-                self?.player.seek(to: .zero)
-                self?.player.play()
-            }
-            player.play()
-        }
     }
+
 }
 
 struct WifiOutsideScreen: View {
