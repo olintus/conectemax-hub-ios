@@ -103,7 +103,9 @@ private struct OfflineSupportDTO: Decodable { let message: String }
     }
 
     func selectContract(_ contractId: String) async throws {
-        let _: MessageDTO = try await auth.authorized("contracts/select", body: ["contractId": contractId])
+        // The endpoint returns a contract map (not necessarily a `message` field).
+        // Decode it as a generic string map, as the Android client does.
+        let _: [String: String] = try await auth.authorized("contracts/select", body: ["contractId": contractId])
     }
 
     func requestAddOn(_ offerId: String) async throws -> AddOnRequest {
