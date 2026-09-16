@@ -63,7 +63,7 @@ struct HomeScreen: View {
                         Text("Olá, \(hub.name.uppercased())!").font(.system(size: 31, weight: .regular)).foregroundStyle(.white).lineLimit(2)
                         Text("Tudo o que conecta você está aqui.").font(.title3).foregroundStyle(.white.opacity(0.84))
                     }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(22)
-                }.frame(height: 360)
+                }.frame(height: 280)
                 NavigationLink(value: "minha") {
                     HubCard { VStack(spacing: 16) {
                         HStack(spacing: 16) {
