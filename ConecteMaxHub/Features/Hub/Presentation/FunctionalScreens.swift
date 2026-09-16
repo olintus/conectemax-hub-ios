@@ -103,9 +103,9 @@ struct SpeedTestScreen: View {
 
 private struct WebView: UIViewRepresentable { let url: URL; func makeUIView(context: Context) -> WKWebView { WKWebView() }; func updateUIView(_ view: WKWebView, context: Context) { if view.url != url { view.load(URLRequest(url: url)) } } }
 private struct EmptyCard: View { let icon: String; let text: String; var body: some View { VStack(spacing: 12) { Image(systemName: icon).font(.largeTitle).foregroundStyle(HubStyle.medium); Text(text).multilineTextAlignment(.center).foregroundStyle(HubStyle.medium) }.frame(maxWidth: .infinity).padding(30).background(.white, in: RoundedRectangle(cornerRadius: 22)) } }
-private func currency(_ value: Double) -> String { value.formatted(.currency(code: "BRL").locale(Locale(identifier: "pt_BR"))) }
+func currency(_ value: Double) -> String { value.formatted(.currency(code: "BRL").locale(Locale(identifier: "pt_BR"))) }
 private func bytesLabel(_ bytes: Double) -> String { let units = ["KB", "MB", "GB", "TB"]; var value = max(bytes / 1024, 0); var index = 0; while value >= 1024, index < units.count - 1 { value /= 1024; index += 1 }; return String(format: "%.2f %@", value, units[index]) }
-private func dateLabel(_ value: String) -> String { String(value.prefix(10).replacingOccurrences(of: "-", with: "/")) }
+func dateLabel(_ value: String) -> String { String(value.prefix(10).replacingOccurrences(of: "-", with: "/")) }
 private func periodLabel(_ value: String?) -> String { guard let value, value.count >= 7 else { return "Período atual" }; let names = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]; let month = Int(value.dropFirst(5).prefix(2)).flatMap { $0 > 0 && $0 <= 12 ? names[$0 - 1] : nil } ?? "Período"; return "\(month) de \(value.prefix(4))" }
 private struct MonthChoice: Identifiable { let value: String; let label: String; var id: String { value } }
 private func recentMonths() -> [MonthChoice] { let calendar = Calendar(identifier: .gregorian); return (0..<24).compactMap { offset in guard let date = calendar.date(byAdding: .month, value: -offset, to: Date()) else { return nil }; let value = date.formatted(.dateTime.year().month(.twoDigits)); return MonthChoice(value: value, label: periodLabel(value)) } }

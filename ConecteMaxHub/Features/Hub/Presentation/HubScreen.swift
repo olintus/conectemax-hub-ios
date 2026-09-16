@@ -54,20 +54,29 @@ struct HomeScreen: View {
             LazyVStack(alignment: .leading, spacing: 18) {
                 ZStack(alignment: .bottomTrailing) {
                     LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Circle().fill(Color.white.opacity(0.12)).frame(width: 144).offset(x: 30, y: 28)
+                    Circle().fill(HubStyle.orange).frame(width: 62).offset(x: 18, y: 18)
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("SEU DIA, MAIS CONECTADO").font(.caption.bold()).foregroundStyle(HubStyle.orange)
-                        Text("Olá, \(hub.name)!").font(.title.bold()).foregroundStyle(.white)
+                        Text("conecte max").font(.headline.bold()).foregroundStyle(.white)
+                        Spacer().frame(height: 10)
+                        Text("Olá, \(hub.name)!").font(.title2.bold()).foregroundStyle(.white)
                         Text("Tudo o que conecta você está aqui.").foregroundStyle(.white.opacity(0.82))
-                    }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
-                }.frame(height: 160).clipShape(RoundedRectangle(cornerRadius: 26))
+                    }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(22)
+                }.frame(height: 218)
                 NavigationLink(value: "minha") {
-                    HubCard { HStack(spacing: 15) {
-                        Image(systemName: "wifi").font(.title2).foregroundStyle(.white).frame(width: 58, height: 58).background(HubStyle.blue, in: RoundedRectangle(cornerRadius: 18))
-                        VStack(alignment: .leading, spacing: 5) { Label(hub.status, systemImage: "circle.fill").font(.caption).foregroundStyle(HubStyle.medium); Text(hub.plan).font(.title3.bold()).foregroundStyle(HubStyle.ink); Text("Plano de internet do contrato selecionado").font(.caption).foregroundStyle(HubStyle.medium) }.frame(maxWidth: .infinity, alignment: .leading)
-                        Image(systemName: "chevron.right").foregroundStyle(HubStyle.orange)
+                    HubCard { VStack(spacing: 16) {
+                        HStack(spacing: 16) {
+                            Image(systemName: "wifi").font(.title2).foregroundStyle(.white).frame(width: 68, height: 68).background(HubStyle.blue, in: Circle())
+                            VStack(alignment: .leading, spacing: 5) {
+                                HStack { Text(hub.status).font(.caption); Circle().fill(.green).frame(width: 10, height: 10) }
+                                Text(hub.plan).font(.title3.bold()).foregroundStyle(HubStyle.ink)
+                                Text("Plano de internet do contrato selecionado").font(.caption).foregroundStyle(HubStyle.medium)
+                            }.frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        Divider()
+                        HStack { Image(systemName: "doc.text").font(.title3).foregroundStyle(HubStyle.ink); VStack(alignment: .leading, spacing: 2) { Text("CONTRATO").font(.caption2.bold()).foregroundStyle(HubStyle.medium); Text(hub.selectedContractId ?? "--").font(.headline) }; Spacer(); Text("Trocar contrato  →").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
                     } }
-                }.buttonStyle(.plain)
+                }.buttonStyle(.plain).padding(.top, -42)
+                HomeInvoiceCard(open: hub.billing.open.first, paid: hub.billing.paid.first)
                 Text("Acesso rápido").font(.title3.bold()).padding(.top, 2)
                 LazyVGrid(columns: columns, spacing: 12) {
                     QuickLink(title: "Faturas", icon: "doc.text", target: "billing")
@@ -91,6 +100,26 @@ struct HomeScreen: View {
 private struct QuickLink: View {
     let title: String; let icon: String; let target: String
     var body: some View { NavigationLink(value: target) { VStack(alignment: .leading, spacing: 12) { Image(systemName: icon).foregroundStyle(HubStyle.blue).font(.title3).frame(width: 42, height: 42).background(HubStyle.blue.opacity(0.10), in: RoundedRectangle(cornerRadius: 13)); Text(title).font(.caption.bold()).foregroundStyle(HubStyle.ink).lineLimit(1) }.frame(maxWidth: .infinity, minHeight: 112, alignment: .leading).padding(13).background(.white, in: RoundedRectangle(cornerRadius: 18)).overlay(RoundedRectangle(cornerRadius: 18).stroke(HubStyle.gray, lineWidth: 1)) }.buttonStyle(.plain) }
+}
+private struct HomeInvoiceCard: View {
+    let open: Invoice?
+    let paid: Invoice?
+    private var invoice: Invoice? { open ?? paid }
+    var body: some View {
+        NavigationLink(value: "billing") {
+            HubCard { HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Última fatura").font(.subheadline).foregroundStyle(HubStyle.medium)
+                    if let invoice {
+                        Text(currency(invoice.amount)).font(.title3.bold()).foregroundStyle(open == nil ? .green : HubStyle.orange)
+                        Text(open == nil ? "Pago" : "Vencimento: \(dateLabel(invoice.dueDate))").font(.caption).foregroundStyle(HubStyle.medium)
+                    } else { Text("Ainda não foi gerada uma fatura no período").font(.headline) }
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 9) { Text(open == nil ? "Ver faturas" : "Pagar fatura").font(.caption.bold()).foregroundStyle(.white).padding(.horizontal, 12).padding(.vertical, 9).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
+            } }
+        }.buttonStyle(.plain)
+    }
 }
 struct ModuleList: View {
     let title: String
