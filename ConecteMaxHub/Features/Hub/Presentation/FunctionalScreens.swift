@@ -1,40 +1,113 @@
 import SwiftUI
 import WebKit
+import UIKit
 
 struct BillingScreen: View {
     let billing: BillingSummary
     @State private var showingOpen = true
+    @State private var expandedID: String?
+    @State private var copiedMessage: String?
     private var invoices: [Invoice] { showingOpen ? billing.open : billing.paid }
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-            Text("Minhas faturas").font(.largeTitle.bold())
-            Picker("Faturas", selection: $showingOpen) {
-                Text("Em aberto (\(billing.open.count))").tag(true)
-                Text("Já pagas (\(billing.paid.count))").tag(false)
-            }.pickerStyle(.segmented)
-            if invoices.isEmpty {
-                EmptyCard(icon: "doc.text", text: showingOpen ? "Não há faturas em aberto." : "Ainda não há faturas pagas disponíveis.")
+                HStack(spacing: 0) {
+                    BillingTab(title: "Em aberto", count: billing.open.count, selected: showingOpen) { showingOpen = true; expandedID = nil }
+                    BillingTab(title: "Já pagas", count: billing.paid.count, selected: !showingOpen) { showingOpen = false; expandedID = nil }
+                }
+                .padding(7)
+                .background(HubStyle.gray.opacity(0.72), in: RoundedRectangle(cornerRadius: 24))
+                if invoices.isEmpty {
+                    EmptyCard(icon: "doc.text", text: showingOpen ? "Não há faturas em aberto." : "Ainda não há faturas pagas disponíveis.")
+                }
+                ForEach(invoices) { invoice in
+                    InvoiceCard(invoice: invoice, expanded: expandedID == invoice.id, onTap: {
+                        withAnimation(.easeInOut(duration: 0.2)) { expandedID = expandedID == invoice.id ? nil : invoice.id }
+                    }, copy: copy)
+                }
             }
-            ForEach(invoices) { invoice in
-                HubCard {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 3) {
-                                Text(invoice.status).font(.caption.bold()).foregroundStyle(invoice.status.lowercased().contains("abert") ? HubStyle.orange : .green)
-                                Text("Vencimento: \(dateLabel(invoice.dueDate))").font(.headline)
-                            }
-                            Spacer()
-                            Text(currency(invoice.amount)).font(.title3.bold()).foregroundStyle(HubStyle.ink)
-                        }
-                        if let paidAt = invoice.paidAt { Text("Pagamento: \(dateLabel(paidAt))").font(.subheadline).foregroundStyle(HubStyle.medium) }
-                        if let pix = invoice.pix { Text("PIX disponível").font(.caption.bold()).foregroundStyle(HubStyle.blue); Text(pix).font(.caption).lineLimit(1).foregroundStyle(HubStyle.medium) }
-                        if let url = invoice.invoiceURL, let destination = URL(string: url) { Link("Abrir fatura", destination: destination).font(.subheadline.bold()).foregroundStyle(HubStyle.blue) }
+            .padding(20)
+        }
+        .navigationTitle("Faturas")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Código copiado", isPresented: Binding(get: { copiedMessage != nil }, set: { if !$0 { copiedMessage = nil } })) {
+            Button("Entendi") { copiedMessage = nil }
+        } message: {
+            Text(copiedMessage ?? "")
+        }
+    }
+
+    private func copy(_ value: String?, label: String) {
+        guard let value, !value.isEmpty else {
+            copiedMessage = "O \(label.lowercased()) ainda não está disponível para esta fatura."
+            return
+        }
+        UIPasteboard.general.string = value
+        copiedMessage = "\(label) copiado para a área de transferência."
+    }
+}
+
+private struct BillingTab: View {
+    let title: String
+    let count: Int
+    let selected: Bool
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Text(title).font(.headline.bold())
+                Text("\(count)").font(.subheadline.bold()).frame(width: 32, height: 32).background(HubStyle.gray.opacity(0.85), in: Circle())
+            }
+            .foregroundStyle(selected ? HubStyle.blue : HubStyle.medium)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(selected ? .white : .clear, in: RoundedRectangle(cornerRadius: 19))
+            .shadow(color: selected ? .black.opacity(0.12) : .clear, radius: 5, y: 2)
+        }.buttonStyle(.plain)
+    }
+}
+
+private struct InvoiceCard: View {
+    let invoice: Invoice
+    let expanded: Bool
+    let onTap: () -> Void
+    let copy: (String?, String) -> Void
+    private var isOpen: Bool { invoice.status.lowercased().contains("abert") || invoice.status.lowercased().contains("venc") }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Button(action: onTap) {
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("Fatura de \(dateLabel(invoice.dueDate))").font(.title3).foregroundStyle(HubStyle.medium)
+                    HStack(alignment: .firstTextBaseline, spacing: 14) {
+                        Text(currency(invoice.amount)).font(.system(size: 32, weight: .regular)).foregroundStyle(HubStyle.ink)
+                        Text(isOpen ? "Em aberto" : invoice.status).font(.title3).foregroundStyle(isOpen ? HubStyle.orange : .green)
+                    }
+                    Text(isOpen ? "Vencido em \(dateLabel(invoice.dueDate))" : "Pago em \(dateLabel(invoice.paidAt ?? invoice.dueDate))").font(.title3).foregroundStyle(HubStyle.medium)
+                }.frame(maxWidth: .infinity, alignment: .leading)
+            }.buttonStyle(.plain)
+            if expanded && isOpen {
+                VStack(spacing: 16) {
+                    InvoiceAction(title: "Código de barras", filled: true) { copy(invoice.barcode, "Código de barras") }
+                    InvoiceAction(title: "Pix Copia e Cola", filled: true) { copy(invoice.pix, "Pix Copia e Cola") }
+                    if let value = invoice.invoiceURL, let url = URL(string: value) {
+                        Link(destination: url) { Text("Visualizar Fatura").font(.headline.bold()).foregroundStyle(HubStyle.blue).frame(maxWidth: .infinity).padding(.vertical, 17).overlay(RoundedRectangle(cornerRadius: 28).stroke(HubStyle.medium, lineWidth: 1.5)) }
                     }
                 }
             }
-            }.padding(20)
-        }.navigationTitle("Faturas").navigationBarTitleDisplayMode(.inline)
+        }
+        .padding(26)
+        .background(.white, in: RoundedRectangle(cornerRadius: 28))
+    }
+}
+
+private struct InvoiceAction: View {
+    let title: String
+    let filled: Bool
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Text(title).font(.headline.bold()).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 18).background(HubStyle.dark, in: Capsule())
+        }.buttonStyle(.plain)
     }
 }
 
