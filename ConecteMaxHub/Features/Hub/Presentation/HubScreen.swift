@@ -56,28 +56,27 @@ struct HomeScreen: View {
             LazyVStack(alignment: .leading, spacing: 14) {
                 ZStack(alignment: .bottomTrailing) {
                     LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Circle().fill(HubStyle.orange).frame(width: 62).offset(x: 18, y: 18)
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("conecte").font(.title.bold()).foregroundStyle(.white)
-                        Text("max").font(.caption.bold()).foregroundStyle(.white).offset(y: -10)
-                        Spacer().frame(height: 5)
-                        Text("Olá, \(hub.name)!").font(.title.bold()).foregroundStyle(.white)
-                        Text("Tudo o que conecta você está aqui.").foregroundStyle(.white.opacity(0.82))
+                    Circle().fill(HubStyle.orange).frame(width: 72).offset(x: 20, y: 22)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Image("ConecteLogo").resizable().scaledToFit().frame(width: 255, height: 92).accessibilityLabel("Conecte Max")
+                        Spacer().frame(height: 8)
+                        Text("Olá, \(hub.name.uppercased())!").font(.system(size: 31, weight: .regular)).foregroundStyle(.white).lineLimit(2)
+                        Text("Tudo o que conecta você está aqui.").font(.title3).foregroundStyle(.white.opacity(0.84))
                     }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(22)
-                }.frame(height: 218)
+                }.frame(height: 360)
                 NavigationLink(value: "minha") {
                     HubCard { VStack(spacing: 16) {
                         HStack(spacing: 16) {
-                            Image(systemName: "wifi").font(.title2).foregroundStyle(.white).frame(width: 68, height: 68).background(HubStyle.blue, in: Circle())
+                            Image(systemName: "wifi").font(.system(size: 32, weight: .bold)).foregroundStyle(.white).frame(width: 86, height: 86).background(HubStyle.orange, in: Circle())
                             VStack(alignment: .leading, spacing: 5) {
-                                HStack { Text(hub.status).font(.caption); Circle().fill(.green).frame(width: 10, height: 10) }
-                                Text(hub.plan).font(.title3.bold()).foregroundStyle(HubStyle.ink)
-                                Text("Plano de internet do contrato selecionado").font(.caption).foregroundStyle(HubStyle.medium)
+                                HStack { Text(hub.status).font(.title3); Circle().fill(HubStyle.orange).frame(width: 12, height: 12) }
+                                Text(hub.plan).font(.system(size: 25, weight: .regular)).foregroundStyle(HubStyle.ink).lineLimit(2)
+                                Text("Plano de internet do contrato selecionado").font(.title3).foregroundStyle(HubStyle.medium)
                             }.frame(maxWidth: .infinity, alignment: .leading)
                         }
                         Divider()
-                        HStack { Image(systemName: "doc.text").font(.title3).foregroundStyle(HubStyle.ink); VStack(alignment: .leading, spacing: 2) { Text("CONTRATO").font(.caption2.bold()).foregroundStyle(HubStyle.medium); Text(hub.selectedContractId ?? "--").font(.headline) }; Spacer(); Text("Trocar contrato  →").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
-                    } }
+                        HStack { Image(systemName: "doc.text.fill").font(.system(size: 34)).foregroundStyle(HubStyle.ink); VStack(alignment: .leading, spacing: 2) { Text("CONTRATO").font(.caption.bold()).foregroundStyle(HubStyle.medium); Text(hub.selectedContractId ?? "--").font(.system(size: 25, weight: .regular)) }; Spacer(); Text("Trocar contrato").font(.headline).foregroundStyle(HubStyle.blue); Text("→").font(.headline).foregroundStyle(HubStyle.blue) }
+                    } }.frame(minHeight: 250)
                 }.buttonStyle(.plain).padding(.horizontal, 20).padding(.top, -32)
                 HomeInvoiceCard(open: hub.billing.open.first, paid: hub.billing.paid.first).padding(.horizontal, 20)
                 HomePromiseCard().padding(.horizontal, 20)
@@ -120,8 +119,8 @@ private struct HomeInvoiceCard: View {
                     } else { Text("Ainda não foi gerada uma fatura no período").font(.headline) }
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: 9) { Text(open == nil ? "Ver faturas" : "Pagar fatura").font(.caption.bold()).foregroundStyle(.white).padding(.horizontal, 12).padding(.vertical, 9).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
-            } }
+                VStack(alignment: .trailing, spacing: 22) { Label(open == nil ? "Ver faturas" : "Pagar fatura", systemImage: "viewfinder").font(.headline.bold()).foregroundStyle(.white).padding(.horizontal, 18).padding(.vertical, 14).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.headline.bold()).foregroundStyle(HubStyle.blue) }
+            } }.frame(minHeight: 210)
         }.buttonStyle(.plain)
     }
 }

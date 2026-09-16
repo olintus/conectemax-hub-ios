@@ -16,8 +16,9 @@ struct HubCard<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) { content }
             .frame(maxWidth: .infinity, alignment: .leading).padding(20)
-            .background(Color.white, in: RoundedRectangle(cornerRadius: 20))
-            .overlay(RoundedRectangle(cornerRadius: 20).stroke(HubStyle.gray, lineWidth: 1))
+            .background(Color(red: 0.90, green: 0.93, blue: 0.98), in: RoundedRectangle(cornerRadius: 24))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(HubStyle.gray, lineWidth: 1))
+            .shadow(color: .black.opacity(0.13), radius: 10, y: 6)
     }
 }
 struct PrimaryButton: ButtonStyle {
