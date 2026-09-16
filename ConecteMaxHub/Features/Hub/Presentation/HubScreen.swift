@@ -43,11 +43,11 @@ struct HomeScreen: View {
             LazyVStack(alignment: .leading, spacing: 18) {
                 ZStack(alignment: .bottomTrailing) {
                     LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
-                    Circle().fill(Color.white.opacity(.12)).frame(width: 144).offset(x: 30, y: 28)
+                    Circle().fill(Color.white.opacity(0.12)).frame(width: 144).offset(x: 30, y: 28)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("SEU DIA, MAIS CONECTADO").font(.caption.bold()).foregroundStyle(HubStyle.orange)
                         Text("Olá, \(hub.name)!").font(.title.bold()).foregroundStyle(.white)
-                        Text("Tudo o que conecta você está aqui.").foregroundStyle(.white.opacity(.82))
+                        Text("Tudo o que conecta você está aqui.").foregroundStyle(.white.opacity(0.82))
                     }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
                 }.frame(height: 160).clipShape(RoundedRectangle(cornerRadius: 26))
                 NavigationLink(value: "minha") {
@@ -68,8 +68,8 @@ struct HomeScreen: View {
                 }
                 ZStack(alignment: .bottomTrailing) {
                     RoundedRectangle(cornerRadius: 24).fill(HubStyle.blue)
-                    Circle().fill(HubStyle.orange.opacity(.9)).frame(width: 100).offset(x: 32, y: 34)
-                    VStack(alignment: .leading, spacing: 6) { Text("Uma vida mais").foregroundStyle(.white).font(.headline); Text("conectada te espera.").foregroundStyle(HubStyle.orange).font(.headline); Text("Internet, streaming, benefícios e muito mais.").foregroundStyle(.white.opacity(.85)).font(.subheadline); Text("Conheça agora  →").foregroundStyle(.white).font(.subheadline.bold()).padding(.top, 8) }.frame(maxWidth: .infinity, alignment: .leading).padding(22)
+                    Circle().fill(HubStyle.orange.opacity(0.9)).frame(width: 100).offset(x: 32, y: 34)
+                    VStack(alignment: .leading, spacing: 6) { Text("Uma vida mais").foregroundStyle(.white).font(.headline); Text("conectada te espera.").foregroundStyle(HubStyle.orange).font(.headline); Text("Internet, streaming, benefícios e muito mais.").foregroundStyle(.white.opacity(0.85)).font(.subheadline); Text("Conheça agora  →").foregroundStyle(.white).font(.subheadline.bold()).padding(.top, 8) }.frame(maxWidth: .infinity, alignment: .leading).padding(22)
                 }.frame(height: 150)
                 Button("Atualizar informações", action: reload).frame(maxWidth: .infinity).foregroundStyle(HubStyle.blue)
             }.padding(20)
@@ -79,7 +79,7 @@ struct HomeScreen: View {
 
 private struct QuickLink: View {
     let title: String; let icon: String; let target: String
-    var body: some View { NavigationLink(value: target) { VStack(alignment: .leading, spacing: 12) { Image(systemName: icon).foregroundStyle(HubStyle.blue).font(.title3).frame(width: 42, height: 42).background(HubStyle.blue.opacity(.10), in: RoundedRectangle(cornerRadius: 13)); Text(title).font(.caption.bold()).foregroundStyle(HubStyle.ink).lineLimit(1) }.frame(maxWidth: .infinity, minHeight: 112, alignment: .leading).padding(13).background(.white, in: RoundedRectangle(cornerRadius: 18)).overlay(RoundedRectangle(cornerRadius: 18).stroke(HubStyle.gray, lineWidth: 1)) }.buttonStyle(.plain) }
+    var body: some View { NavigationLink(value: target) { VStack(alignment: .leading, spacing: 12) { Image(systemName: icon).foregroundStyle(HubStyle.blue).font(.title3).frame(width: 42, height: 42).background(HubStyle.blue.opacity(0.10), in: RoundedRectangle(cornerRadius: 13)); Text(title).font(.caption.bold()).foregroundStyle(HubStyle.ink).lineLimit(1) }.frame(maxWidth: .infinity, minHeight: 112, alignment: .leading).padding(13).background(.white, in: RoundedRectangle(cornerRadius: 18)).overlay(RoundedRectangle(cornerRadius: 18).stroke(HubStyle.gray, lineWidth: 1)) }.buttonStyle(.plain) }
 }
 struct ModuleList: View {
     let title: String
@@ -89,8 +89,8 @@ struct ModuleList: View {
         ScrollView { LazyVStack(alignment: .leading, spacing: 16) {
             ZStack(alignment: .bottomTrailing) {
                 LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
-                Image(systemName: "play.circle.fill").font(.system(size: 96)).foregroundStyle(.white.opacity(.18)).padding(18)
-                VStack(alignment: .leading, spacing: 8) { Text("BENEFÍCIOS E SERVIÇOS").font(.caption.bold()).foregroundStyle(HubStyle.orange); Text(title).font(.largeTitle.bold()).foregroundStyle(.white); Text(subtitle).foregroundStyle(.white.opacity(.82)) }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
+                Image(systemName: "play.circle.fill").font(.system(size: 96)).foregroundStyle(.white.opacity(0.18)).padding(18)
+                VStack(alignment: .leading, spacing: 8) { Text("BENEFÍCIOS E SERVIÇOS").font(.caption.bold()).foregroundStyle(HubStyle.orange); Text(title).font(.largeTitle.bold()).foregroundStyle(.white); Text(subtitle).foregroundStyle(.white.opacity(0.82)) }.frame(maxWidth: .infinity, alignment: .leading).padding(24)
             }.frame(height: 210).clipShape(RoundedRectangle(cornerRadius: 26))
             ForEach(modules) { ModuleLink(module: $0) }
         }.padding(20) }
@@ -101,9 +101,9 @@ struct ModuleLink: View {
     var body: some View {
         NavigationLink(value: module.id) {
             HubCard { HStack(alignment: .center, spacing: 16) {
-                Image(systemName: symbol(module.icon)).font(.title2).foregroundStyle(module.id == "energia" ? .green : HubStyle.blue).frame(width: 68, height: 68).background((module.id == "energia" ? Color.green : HubStyle.blue).opacity(.12), in: RoundedRectangle(cornerRadius: 20)).accessibilityHidden(true)
+                Image(systemName: symbol(module.icon)).font(.title2).foregroundStyle(module.id == "energia" ? .green : HubStyle.blue).frame(width: 68, height: 68).background((module.id == "energia" ? Color.green : HubStyle.blue).opacity(0.12), in: RoundedRectangle(cornerRadius: 20)).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) { Text(module.title).font(.title3.bold()); Text(module.subtitle).font(.subheadline).foregroundStyle(HubStyle.medium).lineLimit(3) }.frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "arrow.right").foregroundStyle(HubStyle.orange).padding(10).background(HubStyle.orange.opacity(.12), in: Circle()).accessibilityHidden(true)
+                Image(systemName: "arrow.right").foregroundStyle(HubStyle.orange).padding(10).background(HubStyle.orange.opacity(0.12), in: Circle()).accessibilityHidden(true)
             } }
         }.buttonStyle(.plain)
     }
