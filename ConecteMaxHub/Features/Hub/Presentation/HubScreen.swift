@@ -53,14 +53,15 @@ struct HomeScreen: View {
     private let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 14) {
                 ZStack(alignment: .bottomTrailing) {
                     LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing)
                     Circle().fill(HubStyle.orange).frame(width: 62).offset(x: 18, y: 18)
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("conecte max").font(.headline.bold()).foregroundStyle(.white)
-                        Spacer().frame(height: 10)
-                        Text("Olá, \(hub.name)!").font(.title2.bold()).foregroundStyle(.white)
+                        Text("conecte").font(.title.bold()).foregroundStyle(.white)
+                        Text("max").font(.caption.bold()).foregroundStyle(.white).offset(y: -10)
+                        Spacer().frame(height: 5)
+                        Text("Olá, \(hub.name)!").font(.title.bold()).foregroundStyle(.white)
                         Text("Tudo o que conecta você está aqui.").foregroundStyle(.white.opacity(0.82))
                     }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading).padding(22)
                 }.frame(height: 218)
@@ -77,9 +78,10 @@ struct HomeScreen: View {
                         Divider()
                         HStack { Image(systemName: "doc.text").font(.title3).foregroundStyle(HubStyle.ink); VStack(alignment: .leading, spacing: 2) { Text("CONTRATO").font(.caption2.bold()).foregroundStyle(HubStyle.medium); Text(hub.selectedContractId ?? "--").font(.headline) }; Spacer(); Text("Trocar contrato  →").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
                     } }
-                }.buttonStyle(.plain).padding(.top, -42)
-                HomeInvoiceCard(open: hub.billing.open.first, paid: hub.billing.paid.first)
-                Text("Acesso rápido").font(.title3.bold()).padding(.top, 2)
+                }.buttonStyle(.plain).padding(.horizontal, 20).padding(.top, -32)
+                HomeInvoiceCard(open: hub.billing.open.first, paid: hub.billing.paid.first).padding(.horizontal, 20)
+                HomePromiseCard().padding(.horizontal, 20)
+                Text("Acesso rápido").font(.title3.bold()).padding(.horizontal, 20).padding(.top, 2)
                 LazyVGrid(columns: columns, spacing: 12) {
                     QuickLink(title: "Faturas", icon: "doc.text", target: "billing")
                     QuickLink(title: "Velocidade", icon: "gauge", target: "speedtest")
@@ -87,15 +89,15 @@ struct HomeScreen: View {
                     QuickLink(title: "Suporte", icon: "headphones", target: "suporte")
                     QuickLink(title: "Contratos", icon: "rectangle.stack", target: "minha")
                     QuickLink(title: "Serviços", icon: "play.circle", target: "mais")
-                }
+                }.padding(.horizontal, 20)
                 ZStack(alignment: .bottomTrailing) {
                     RoundedRectangle(cornerRadius: 24).fill(HubStyle.blue)
                     Circle().fill(HubStyle.orange.opacity(0.9)).frame(width: 100).offset(x: 32, y: 34)
                     VStack(alignment: .leading, spacing: 6) { Text("Uma vida mais").foregroundStyle(.white).font(.headline); Text("conectada te espera.").foregroundStyle(HubStyle.orange).font(.headline); Text("Internet, streaming, benefícios e muito mais.").foregroundStyle(.white.opacity(0.85)).font(.subheadline); Text("Conheça agora  →").foregroundStyle(.white).font(.subheadline.bold()).padding(.top, 8) }.frame(maxWidth: .infinity, alignment: .leading).padding(22)
-                }.frame(height: 150)
-                Button("Atualizar informações", action: reload).frame(maxWidth: .infinity).foregroundStyle(HubStyle.blue)
-            }.padding(20)
-        }
+                }.frame(height: 150).padding(.horizontal, 20)
+                Button("Atualizar informações", action: reload).frame(maxWidth: .infinity).foregroundStyle(HubStyle.blue).padding(.vertical, 8)
+            }.padding(.bottom, 28)
+        }.navigationTitle("").navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -121,6 +123,15 @@ private struct HomeInvoiceCard: View {
                 VStack(alignment: .trailing, spacing: 9) { Text(open == nil ? "Ver faturas" : "Pagar fatura").font(.caption.bold()).foregroundStyle(.white).padding(.horizontal, 12).padding(.vertical, 9).background(HubStyle.orange, in: Capsule()); Text("Ver faturas").font(.caption.bold()).foregroundStyle(HubStyle.blue) }
             } }
         }.buttonStyle(.plain)
+    }
+}
+private struct HomePromiseCard: View {
+    var body: some View {
+        HubCard { HStack(spacing: 16) {
+            Image(systemName: "calendar.badge.clock").font(.title2).foregroundStyle(HubStyle.blue).frame(width: 58, height: 58).background(HubStyle.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+            VStack(alignment: .leading, spacing: 4) { Text("Promessa de pagamento").font(.headline); Text("Negocie e mantenha sua conexão em dia.").font(.caption).foregroundStyle(HubStyle.medium) }
+            Spacer(); Text("›").font(.title).foregroundStyle(HubStyle.orange)
+        } }.opacity(0.46)
     }
 }
 struct ModuleList: View {
