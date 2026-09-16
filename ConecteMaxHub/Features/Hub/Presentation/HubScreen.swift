@@ -8,7 +8,7 @@ struct HubScreen: View {
                 TabView {
                     container(hub: hub) { HomeScreen(hub: hub, reload: model.reload) }.tabItem { Label("Início", systemImage: "house") }
                     container(hub: hub) { ModuleList(title: "Conecte+", subtitle: "Seu plano abre novas possibilidades", modules: hub.modules.filter { $0.category == "plus" }) }.tabItem { Label("Conecte+", systemImage: "play.circle") }
-                    container(hub: hub) { ModuleList(title: "Perto de você", subtitle: "Descubra sua cidade e siga conectado", modules: hub.modules.filter { $0.category == "city" }) }.tabItem { Label("Cidade", systemImage: "building.2") }
+                    container(hub: hub) { CityScreen(weather: hub.weather, camera: hub.weatherCamera) }.tabItem { Label("Cidade", systemImage: "building.2") }
                     container(hub: hub) { SupportHomeScreen(tickets: hub.supportTickets, model: model) }.tabItem { Label("Suporte", systemImage: "headphones") }
                     container(hub: hub) { ProfileScreen(model: model) }.tabItem { Label("Perfil", systemImage: "person") }
                 }
@@ -33,6 +33,8 @@ struct HubScreen: View {
                 case "billing": BillingScreen(billing: hub.billing)
                 case "traffic": TrafficScreen(traffic: hub.traffic, model: model)
                 case "speedtest": SpeedTestScreen()
+                case "weather-details": WeatherDetailsScreen(weather: hub.weather, camera: hub.weatherCamera)
+                case "wifi-outdoor": WifiOutsideScreen()
                 case "avisos": NotificationsScreen(notifications: hub.notifications)
                 case "minha": ContractsScreen(contracts: hub.contracts, selectedId: hub.selectedContractId, model: model)
                 case "mais": AddOnsScreen(summary: hub.addOns, contracts: hub.contracts, selectedId: hub.selectedContractId, model: model)

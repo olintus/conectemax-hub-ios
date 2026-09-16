@@ -13,6 +13,8 @@ struct Hub {
     let supportTickets: [SupportTicket]
     let notifications: [AppNotification]
     let addOns: AddOnsSummary
+    let weather: WeatherReading?
+    let weatherCamera: WeatherCamera?
 }
 
 struct HubModule: Identifiable { let id: String; let title: String; let subtitle: String; let category: String; let icon: String; let items: [HubItem] }
@@ -92,6 +94,23 @@ struct AddOnRequest: Identifiable {
 }
 
 struct AddOnsSummary { let contractId: String?; let offers: [AddOnOffer]; let requests: [AddOnRequest] }
+
+struct WeatherReading {
+    let location: String
+    let observedAt: String
+    let temperature: Double?
+    let humidity: Double?
+    let pressure: Double?
+    let feelsLike: Double?
+    let windSpeed: Double?
+    let windGust: Double?
+    let windDirection: String?
+    let rainRate: Double?
+    let rainTotal: Double?
+    let uv: Double?
+    let radiation: Double?
+}
+struct WeatherCamera { let title: String; let hlsURL: String }
 
 @MainActor protocol HubRepository {
     func load() async throws -> Hub

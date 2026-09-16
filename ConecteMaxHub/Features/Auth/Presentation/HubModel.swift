@@ -38,7 +38,7 @@ import Observation
         run {
             let traffic = try await self.repository.traffic(month: month)
             guard let hub = self.hub else { return }
-            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: hub.addOns)
+            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: hub.addOns, weather: hub.weather, weatherCamera: hub.weatherCamera)
         }
     }
     func selectContract(_ contractId: String) {
@@ -49,7 +49,7 @@ import Observation
             let request = try await self.repository.requestAddOn(offerId)
             guard let hub = self.hub else { return }
             let addOns = AddOnsSummary(contractId: hub.addOns.contractId, offers: hub.addOns.offers, requests: [request] + hub.addOns.requests)
-            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: hub.traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: addOns)
+            self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: hub.traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: addOns, weather: hub.weather, weatherCamera: hub.weatherCamera)
         }
     }
     func openSupportTicket(kind: String, description: String) {

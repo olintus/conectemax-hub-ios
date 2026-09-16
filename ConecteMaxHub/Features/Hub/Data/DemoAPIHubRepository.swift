@@ -42,6 +42,11 @@ private struct AddOnRequestDTO: Decodable {
     let id: String; let contractId: String; let offerId: String; let offerTitle: String; let amount: Double; let status: String; let createdAt: Double; let title: String; let message: String
     var domain: AddOnRequest { AddOnRequest(id: id, contractId: contractId, offerId: offerId, offerTitle: offerTitle, amount: amount, status: status, createdAt: Date(timeIntervalSince1970: createdAt / (createdAt > 10_000_000_000 ? 1_000 : 1)).ISO8601Format(), title: title, message: message) }
 }
+private struct WeatherDTO: Decodable {
+    let locationName: String; let observedAt: String; let temperatureC: Double?; let humidityPercent: Double?; let pressureHpa: Double?; let feelsLikeC: Double?; let windSpeedKmh: Double?; let windGustKmh: Double?; let windDirectionCardinal: String?; let precipitationRateMmH: Double?; let precipitationTotalMm: Double?; let uvIndex: Double?; let solarRadiationWm2: Double?
+    var domain: WeatherReading { WeatherReading(location: locationName, observedAt: observedAt, temperature: temperatureC, humidity: humidityPercent, pressure: pressureHpa, feelsLike: feelsLikeC, windSpeed: windSpeedKmh, windGust: windGustKmh, windDirection: windDirectionCardinal, rainRate: precipitationRateMmH, rainTotal: precipitationTotalMm, uv: uvIndex, radiation: solarRadiationWm2) }
+}
+private struct CameraDTO: Decodable { let title: String; let hlsUrl: String; var domain: WeatherCamera { WeatherCamera(title: title, hlsURL: hlsUrl) } }
 private struct AddOnRequestPayload: Encodable { let offerId: String; let confirmed: Bool }
 private struct SupportTicketPayload: Encodable { let kind: String; let description: String }
 private struct OfflineSupportDTO: Decodable { let message: String }
@@ -61,7 +66,9 @@ private struct OfflineSupportDTO: Decodable { let message: String }
         async let ticketsRequest: TicketsDTO? = optional("support/tickets")
         async let notificationsRequest: NotificationsDTO? = optional("notifications")
         async let addOnsRequest: AddOnsDTO? = optional("addons")
-        let (traffic, tickets, notifications, addOns) = await (trafficRequest, ticketsRequest, notificationsRequest, addOnsRequest)
+        async let weatherRequest: WeatherDTO? = optional("weather/current")
+        async let cameraRequest: CameraDTO? = optional("camera/patio")
+        let (traffic, tickets, notifications, addOns, weather, camera) = await (trafficRequest, ticketsRequest, notificationsRequest, addOnsRequest, weatherRequest, cameraRequest)
 
         return Hub(
             name: me.name.isEmpty ? catalog.name : me.name,
@@ -75,7 +82,9 @@ private struct OfflineSupportDTO: Decodable { let message: String }
             traffic: traffic?.domain,
             supportTickets: tickets?.tickets.map(\.domain) ?? [],
             notifications: notifications?.notifications.map(\.domain) ?? [],
-            addOns: addOns?.domain ?? AddOnsSummary(contractId: selectedId, offers: [], requests: [])
+            addOns: addOns?.domain ?? AddOnsSummary(contractId: selectedId, offers: [], requests: []),
+            weather: weather?.domain,
+            weatherCamera: camera?.domain
         )
     }
 

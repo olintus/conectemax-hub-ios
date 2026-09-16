@@ -102,7 +102,7 @@ struct SpeedTestScreen: View {
 }
 
 private struct WebView: UIViewRepresentable { let url: URL; func makeUIView(context: Context) -> WKWebView { WKWebView() }; func updateUIView(_ view: WKWebView, context: Context) { if view.url != url { view.load(URLRequest(url: url)) } } }
-private struct EmptyCard: View { let icon: String; let text: String; var body: some View { VStack(spacing: 12) { Image(systemName: icon).font(.largeTitle).foregroundStyle(HubStyle.medium); Text(text).multilineTextAlignment(.center).foregroundStyle(HubStyle.medium) }.frame(maxWidth: .infinity).padding(30).background(.white, in: RoundedRectangle(cornerRadius: 22)) } }
+struct EmptyCard: View { let icon: String; let text: String; var body: some View { VStack(spacing: 12) { Image(systemName: icon).font(.largeTitle).foregroundStyle(HubStyle.medium); Text(text).multilineTextAlignment(.center).foregroundStyle(HubStyle.medium) }.frame(maxWidth: .infinity).padding(30).background(.white, in: RoundedRectangle(cornerRadius: 22)) } }
 func currency(_ value: Double) -> String { value.formatted(.currency(code: "BRL").locale(Locale(identifier: "pt_BR"))) }
 private func bytesLabel(_ bytes: Double) -> String { let units = ["KB", "MB", "GB", "TB"]; var value = max(bytes / 1024, 0); var index = 0; while value >= 1024, index < units.count - 1 { value /= 1024; index += 1 }; return String(format: "%.2f %@", value, units[index]) }
 func dateLabel(_ value: String) -> String { String(value.prefix(10).replacingOccurrences(of: "-", with: "/")) }
