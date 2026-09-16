@@ -4,9 +4,6 @@ import UIKit
 
 struct BillingScreen: View {
     let billing: BillingSummary
-    let contracts: [CustomerContract]
-    let selectedId: String?
-    @Bindable var model: HubModel
     @State private var showingOpen = true
     @State private var expandedID: String?
     @State private var copiedMessage: String?
@@ -14,42 +11,6 @@ struct BillingScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                if contracts.count > 1 {
-                    Menu {
-                        ForEach(contracts) { contract in
-                            Button {
-                                model.selectContract(contract.id)
-                            } label: {
-                                if contract.id == selectedId {
-                                    Label("Contrato \(contract.id) — selecionado", systemImage: "checkmark")
-                                } else {
-                                    Text("Contrato \(contract.id)")
-                                }
-                            }
-                        }
-                    } label: {
-                        HStack(spacing: 10) {
-                            Image(systemName: "rectangle.stack.fill")
-                                .foregroundStyle(HubStyle.blue)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Faturas do contrato")
-                                    .font(.caption)
-                                    .foregroundStyle(HubStyle.medium)
-                                Text(selectedId ?? "Selecionar contrato")
-                                    .font(.headline)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.up.chevron.down")
-                                .font(.caption.bold())
-                                .foregroundStyle(HubStyle.medium)
-                        }
-                        .foregroundStyle(HubStyle.ink)
-                        .padding(14)
-                        .background(Color(red: 0.89, green: 0.93, blue: 0.98), in: RoundedRectangle(cornerRadius: 16))
-                        .overlay(RoundedRectangle(cornerRadius: 16).stroke(HubStyle.gray, lineWidth: 1))
-                    }
-                    .disabled(model.busy)
-                }
                 HStack(spacing: 0) {
                     BillingTab(title: "Em aberto", count: billing.open.count, selected: showingOpen) { showingOpen = true; expandedID = nil }
                     BillingTab(title: "Já pagas", count: billing.paid.count, selected: !showingOpen) { showingOpen = false; expandedID = nil }

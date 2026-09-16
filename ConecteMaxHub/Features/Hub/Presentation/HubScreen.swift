@@ -30,7 +30,7 @@ struct HubScreen: View {
             .toolbar { ToolbarItem(placement: .topBarTrailing) { NavigationLink(value: "avisos") { Image(systemName: "bell").foregroundStyle(.white).accessibilityLabel("Avisos") } } }
             .navigationDestination(for: String.self) { id in
                 switch id {
-                case "billing": BillingScreen(billing: hub.billing, contracts: hub.contracts, selectedId: hub.selectedContractId, model: model)
+                case "billing": BillingScreen(billing: hub.billing)
                 case "traffic": TrafficScreen(traffic: hub.traffic, model: model)
                 case "speedtest": SpeedTestScreen()
                 case "weather-details": WeatherDetailsScreen(weather: hub.weather, camera: hub.weatherCamera)
