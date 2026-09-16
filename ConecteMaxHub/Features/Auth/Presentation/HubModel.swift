@@ -7,7 +7,9 @@ import Observation
     var error: String?
     var channel: String?
     var hub: Hub?
-    private var cpf = "", challenge = "", grant = ""
+    private var cpf = ""
+    private var challenge = ""
+    private var grant = ""
     private let auth: AuthRepository
     private let repository: HubRepository
     init(auth: AuthRepository, repository: HubRepository) { self.auth = auth; self.repository = repository }
