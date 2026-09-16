@@ -70,6 +70,11 @@ private struct OfflineSupportDTO: Decodable { let message: String }
         async let cameraRequest: CameraDTO? = optional("camera/patio")
         let (traffic, tickets, notifications, addOns, weather, camera) = await (trafficRequest, ticketsRequest, notificationsRequest, addOnsRequest, weatherRequest, cameraRequest)
 
+        let selectedBilling = BillingSummary(
+            open: billing.open.filter { selectedId == nil || $0.contractId == selectedId },
+            paid: billing.paid.filter { selectedId == nil || $0.contractId == selectedId }
+        )
+
         return Hub(
             name: me.name.isEmpty ? catalog.name : me.name,
             plan: catalog.plan,
@@ -78,7 +83,7 @@ private struct OfflineSupportDTO: Decodable { let message: String }
             modules: catalog.modules.map(\.domain),
             contracts: me.contracts.map(\.domain),
             selectedContractId: selectedId,
-            billing: billing.domain,
+            billing: selectedBilling,
             traffic: traffic?.domain,
             supportTickets: tickets?.tickets.map(\.domain) ?? [],
             notifications: notifications?.notifications.map(\.domain) ?? [],
