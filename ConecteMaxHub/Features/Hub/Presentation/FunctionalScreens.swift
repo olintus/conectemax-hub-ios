@@ -6,17 +6,35 @@ struct BillingScreen: View {
     @State private var showingOpen = true
     private var invoices: [Invoice] { showingOpen ? billing.open : billing.paid }
     var body: some View {
-        ScrollView { VStack(alignment: .leading, spacing: 18) {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
             Text("Minhas faturas").font(.largeTitle.bold())
-            Picker("Faturas", selection: $showingOpen) { Text("Em aberto (\(billing.open.count))").tag(true); Text("Já pagas (\(billing.paid.count))").tag(false) }.pickerStyle(.segmented)
-            if invoices.isEmpty { EmptyCard(icon: "doc.text", text: showingOpen ? "Não há faturas em aberto." : "Ainda não há faturas pagas disponíveis.") }
-            ForEach(invoices) { invoice in HubCard { VStack(alignment: .leading, spacing: 10) {
-                HStack { VStack(alignment: .leading, spacing: 3) { Text(invoice.status).font(.caption.bold()).foregroundStyle(invoice.status.lowercased().contains("abert") ? HubStyle.orange : .green); Text("Vencimento: \(dateLabel(invoice.dueDate))").font(.headline) }; Spacer(); Text(currency(invoice.amount)).font(.title3.bold()).foregroundStyle(HubStyle.ink) }
-                if let paidAt = invoice.paidAt { Text("Pagamento: \(dateLabel(paidAt))").font(.subheadline).foregroundStyle(HubStyle.medium) }
-                if let pix = invoice.pix { Text("PIX disponível").font(.caption.bold()).foregroundStyle(HubStyle.blue); Text(pix).font(.caption).lineLimit(1).foregroundStyle(HubStyle.medium) }
-                if let url = invoice.invoiceURL, let destination = URL(string: url) { Link("Abrir fatura", destination: destination).font(.subheadline.bold()).foregroundStyle(HubStyle.blue) }
-            } }
-        }.padding(20) }.navigationTitle("Faturas").navigationBarTitleDisplayMode(.inline)
+            Picker("Faturas", selection: $showingOpen) {
+                Text("Em aberto (\(billing.open.count))").tag(true)
+                Text("Já pagas (\(billing.paid.count))").tag(false)
+            }.pickerStyle(.segmented)
+            if invoices.isEmpty {
+                EmptyCard(icon: "doc.text", text: showingOpen ? "Não há faturas em aberto." : "Ainda não há faturas pagas disponíveis.")
+            }
+            ForEach(invoices) { invoice in
+                HubCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(invoice.status).font(.caption.bold()).foregroundStyle(invoice.status.lowercased().contains("abert") ? HubStyle.orange : .green)
+                                Text("Vencimento: \(dateLabel(invoice.dueDate))").font(.headline)
+                            }
+                            Spacer()
+                            Text(currency(invoice.amount)).font(.title3.bold()).foregroundStyle(HubStyle.ink)
+                        }
+                        if let paidAt = invoice.paidAt { Text("Pagamento: \(dateLabel(paidAt))").font(.subheadline).foregroundStyle(HubStyle.medium) }
+                        if let pix = invoice.pix { Text("PIX disponível").font(.caption.bold()).foregroundStyle(HubStyle.blue); Text(pix).font(.caption).lineLimit(1).foregroundStyle(HubStyle.medium) }
+                        if let url = invoice.invoiceURL, let destination = URL(string: url) { Link("Abrir fatura", destination: destination).font(.subheadline.bold()).foregroundStyle(HubStyle.blue) }
+                    }
+                }
+            }
+            }.padding(20)
+        }.navigationTitle("Faturas").navigationBarTitleDisplayMode(.inline)
     }
 }
 
