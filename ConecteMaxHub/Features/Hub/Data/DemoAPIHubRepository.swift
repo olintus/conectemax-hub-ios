@@ -43,6 +43,8 @@ private struct AddOnRequestDTO: Decodable {
     var domain: AddOnRequest { AddOnRequest(id: id, contractId: contractId, offerId: offerId, offerTitle: offerTitle, amount: amount, status: status, createdAt: Date(timeIntervalSince1970: createdAt / (createdAt > 10_000_000_000 ? 1_000 : 1)).ISO8601Format(), title: title, message: message) }
 }
 private struct AddOnRequestPayload: Encodable { let offerId: String; let confirmed: Bool }
+private struct SupportTicketPayload: Encodable { let kind: String; let description: String }
+private struct OfflineSupportDTO: Decodable { let message: String }
 
 @MainActor final class DemoAPIHubRepository: HubRepository {
     let auth: DemoAPIAuthRepository
@@ -89,6 +91,11 @@ private struct AddOnRequestPayload: Encodable { let offerId: String; let confirm
     func requestAddOn(_ offerId: String) async throws -> AddOnRequest {
         let response: AddOnRequestDTO = try await auth.authorized("addons/request", body: AddOnRequestPayload(offerId: offerId, confirmed: true))
         return response.domain
+    }
+
+    func openSupportTicket(kind: String, description: String) async throws -> String {
+        let response: OfflineSupportDTO = try await auth.authorized("support/tickets/open", body: SupportTicketPayload(kind: kind, description: description))
+        return response.message
     }
 
     private func optional<T: Decodable>(_ path: String) async -> T? { try? await auth.authorized(path) }

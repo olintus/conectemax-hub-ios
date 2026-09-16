@@ -9,7 +9,7 @@ struct HubScreen: View {
                     container(hub: hub) { HomeScreen(hub: hub, reload: model.reload) }.tabItem { Label("Início", systemImage: "house") }
                     container(hub: hub) { ModuleList(title: "Conecte+", subtitle: "Seu plano abre novas possibilidades", modules: hub.modules.filter { $0.category == "plus" }) }.tabItem { Label("Conecte+", systemImage: "play.circle") }
                     container(hub: hub) { ModuleList(title: "Perto de você", subtitle: "Descubra sua cidade e siga conectado", modules: hub.modules.filter { $0.category == "city" }) }.tabItem { Label("Cidade", systemImage: "building.2") }
-                    container(hub: hub) { SupportHomeScreen(tickets: hub.supportTickets) }.tabItem { Label("Suporte", systemImage: "headphones") }
+                    container(hub: hub) { SupportHomeScreen(tickets: hub.supportTickets, model: model) }.tabItem { Label("Suporte", systemImage: "headphones") }
                     container(hub: hub) { ProfileScreen(model: model) }.tabItem { Label("Perfil", systemImage: "person") }
                 }
             } else {
@@ -35,9 +35,9 @@ struct HubScreen: View {
                 case "speedtest": SpeedTestScreen()
                 case "avisos": NotificationsScreen(notifications: hub.notifications)
                 case "minha": ContractsScreen(contracts: hub.contracts, selectedId: hub.selectedContractId, model: model)
-                case "mais": AddOnsScreen(summary: hub.addOns, model: model)
+                case "mais": AddOnsScreen(summary: hub.addOns, contracts: hub.contracts, selectedId: hub.selectedContractId, model: model)
                 case "support-tickets": SupportTicketsScreen(tickets: hub.supportTickets)
-                case "suporte": SupportHomeScreen(tickets: hub.supportTickets)
+                case "suporte": SupportHomeScreen(tickets: hub.supportTickets, model: model)
                 default:
                     if let module = hub.modules.first(where: { $0.id == id }) { ModuleScreen(module: module) }
                 }

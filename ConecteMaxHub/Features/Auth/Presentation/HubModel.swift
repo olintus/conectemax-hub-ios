@@ -6,6 +6,7 @@ import Observation
     var busy = false
     var error: String?
     var channel: String?
+    var confirmation: String?
     var hub: Hub?
     private var cpf = ""
     private var challenge = ""
@@ -50,6 +51,9 @@ import Observation
             let addOns = AddOnsSummary(contractId: hub.addOns.contractId, offers: hub.addOns.offers, requests: [request] + hub.addOns.requests)
             self.hub = Hub(name: hub.name, plan: hub.plan, status: hub.status, notice: hub.notice, modules: hub.modules, contracts: hub.contracts, selectedContractId: hub.selectedContractId, billing: hub.billing, traffic: hub.traffic, supportTickets: hub.supportTickets, notifications: hub.notifications, addOns: addOns)
         }
+    }
+    func openSupportTicket(kind: String, description: String) {
+        run { self.confirmation = try await self.repository.openSupportTicket(kind: kind, description: description); self.hub = try await self.repository.load() }
     }
     func logout() { run { try await self.auth.logout(); self.stage = "cpf"; self.hub = nil } }
     func changePassword(_ current: String, _ password: String, _ confirmation: String) {

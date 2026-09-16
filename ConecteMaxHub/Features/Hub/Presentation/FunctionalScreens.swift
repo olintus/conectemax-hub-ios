@@ -45,8 +45,12 @@ struct ContractsScreen: View {
 
 struct AddOnsScreen: View {
     let summary: AddOnsSummary
+    let contracts: [CustomerContract]
+    let selectedId: String?
     @Bindable var model: HubModel
+    private var included: [ContractService] { contracts.first(where: { $0.id == selectedId })?.services.filter { $0.category.lowercased() != "internet" } ?? [] }
     var body: some View { ScrollView { VStack(alignment: .leading, spacing: 18) { Text("Conecte+").font(.largeTitle.bold()); Text("Serviços incluídos e opções para deixar seu plano ainda melhor.").foregroundStyle(HubStyle.medium)
+        if !included.isEmpty { Text("Incluídos no seu combo").font(.title3.bold()); ForEach(included) { service in HubCard { HStack(spacing: 14) { Image(systemName: "checkmark.seal.fill").font(.title2).foregroundStyle(.green); VStack(alignment: .leading, spacing: 4) { Text(service.name).font(.headline); Text(service.category).font(.caption).foregroundStyle(HubStyle.medium); Text("Incluído no seu combo").font(.caption.bold()).foregroundStyle(HubStyle.blue) } } } } }
         if !summary.requests.isEmpty { Text("Solicitados").font(.title3.bold()); ForEach(summary.requests) { request in HubCard { HStack { Image(systemName: "clock.badge.checkmark").foregroundStyle(HubStyle.orange); VStack(alignment: .leading) { Text(request.offerTitle).font(.headline); Text("Pedido \(request.status.lowercased()) · até 24 horas úteis").font(.caption).foregroundStyle(HubStyle.medium) } } } } }
         Text("Disponíveis para contratação").font(.title3.bold()); if summary.offers.isEmpty { EmptyCard(icon: "play.circle", text: "Não há serviços adicionais disponíveis para este contrato.") }
         ForEach(summary.offers) { offer in let requested = summary.requests.contains { $0.offerId == offer.id }; HubCard { VStack(alignment: .leading, spacing: 12) { HStack { Image(systemName: "play.circle.fill").font(.title).foregroundStyle(HubStyle.blue); VStack(alignment: .leading) { Text(offer.title).font(.title3.bold()); if let previous = offer.previousPrice { Text(currency(previous)).strikethrough().font(.caption).foregroundStyle(HubStyle.medium) } }; Spacer(); Text(currency(offer.price) + "/mês").font(.headline).foregroundStyle(HubStyle.orange) }; ForEach(offer.highlights, id: \.self) { Label($0, systemImage: "checkmark.circle.fill").font(.subheadline).foregroundStyle(HubStyle.medium) }; Button(requested ? "Pedido solicitado" : "Contratar") { if !requested { model.requestAddOn(offer.id) } }.buttonStyle(PrimaryButton()).disabled(requested || model.busy) } } }
@@ -57,11 +61,19 @@ struct SupportTicketsScreen: View { let tickets: [SupportTicket]; var body: some
 
 struct SupportHomeScreen: View {
     let tickets: [SupportTicket]
+    @Bindable var model: HubModel
+    @State private var formOpen = false
+    @State private var kind = "Suporte técnico"
+    @State private var description = ""
     var body: some View { ScrollView { VStack(alignment: .leading, spacing: 18) {
         ZStack(alignment: .bottomTrailing) { LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing); Image(systemName: "headphones").font(.system(size: 90)).foregroundStyle(.white.opacity(0.16)).padding(20); VStack(alignment: .leading, spacing: 8) { Text("SUPORTE CONECTE").font(.caption.bold()).foregroundStyle(HubStyle.orange); Text("Como podemos ajudar?").font(.title.bold()).foregroundStyle(.white); Text("Acompanhe solicitações e conte com nosso time.").foregroundStyle(.white.opacity(0.82)) }.frame(maxWidth: .infinity, alignment: .leading).padding(22) }.frame(height: 190).clipShape(RoundedRectangle(cornerRadius: 24))
         NavigationLink(value: "support-tickets") { HubCard { HStack(spacing: 16) { Image(systemName: "ticket").font(.title2).foregroundStyle(HubStyle.blue).frame(width: 58, height: 58).background(HubStyle.blue.opacity(0.12), in: RoundedRectangle(cornerRadius: 18)); VStack(alignment: .leading, spacing: 5) { Text("Meus chamados").font(.title3.bold()); Text(tickets.isEmpty ? "Nenhum chamado em aberto" : "\(tickets.filter(\.open).count) chamado(s) em andamento").font(.subheadline).foregroundStyle(HubStyle.medium) }; Spacer(); Image(systemName: "chevron.right").foregroundStyle(HubStyle.orange) } } }.buttonStyle(.plain)
+        Button("Abrir chamado") { formOpen = true }.buttonStyle(PrimaryButton())
         HubCard { VStack(alignment: .leading, spacing: 8) { Label("Conexão lenta ou sem conexão", systemImage: "wifi.exclamationmark").font(.headline); Text("Verifique cabos, desligue e ligue o roteador e aguarde dois minutos. Se persistir, fale conosco pelo atendimento.").foregroundStyle(HubStyle.medium) } }
-    }.padding(20) }.navigationTitle("Suporte").navigationBarTitleDisplayMode(.inline) }
+    }.padding(20) }.navigationTitle("Suporte").navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $formOpen) { NavigationStack { Form { Picker("Assunto", selection: $kind) { Text("Suporte técnico").tag("Suporte técnico"); Text("Financeiro").tag("Financeiro"); Text("Outros").tag("Outros") }; Section("Descreva sua solicitação") { TextEditor(text: $description).frame(minHeight: 130) } } .navigationTitle("Novo chamado").toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancelar") { formOpen = false } }; ToolbarItem(placement: .confirmationAction) { Button("Enviar") { model.openSupportTicket(kind: kind, description: description); formOpen = false; description = "" }.disabled(description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.busy) } } } }
+        .alert("Solicitação enviada", isPresented: Binding(get: { model.confirmation != nil }, set: { if !$0 { model.confirmation = nil } })) { Button("Entendi") { model.confirmation = nil } } message: { Text(model.confirmation ?? "") }
+    }
 }
 
 struct NotificationsScreen: View { let notifications: [AppNotification]; var body: some View { ScrollView { VStack(alignment: .leading, spacing: 16) { Text("Avisos e campanhas").font(.largeTitle.bold()); if notifications.isEmpty { EmptyCard(icon: "bell", text: "Não há novos avisos para você.") }; ForEach(notifications) { notice in HubCard { VStack(alignment: .leading, spacing: 6) { Text(notice.title).font(.headline); Text(notice.body).foregroundStyle(HubStyle.medium); Text(dateLabel(notice.sentAt)).font(.caption).foregroundStyle(HubStyle.medium) } } } }.padding(20) }.navigationTitle("Avisos").navigationBarTitleDisplayMode(.inline) } }

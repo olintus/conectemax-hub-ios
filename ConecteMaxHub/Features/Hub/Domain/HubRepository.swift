@@ -98,4 +98,5 @@ struct AddOnsSummary { let contractId: String?; let offers: [AddOnOffer]; let re
     func traffic(month: String) async throws -> TrafficSummary
     func selectContract(_ contractId: String) async throws
     func requestAddOn(_ offerId: String) async throws -> AddOnRequest
+    func openSupportTicket(kind: String, description: String) async throws -> String
 }
