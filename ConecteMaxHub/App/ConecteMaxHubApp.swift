@@ -25,14 +25,44 @@ private struct LaunchLoadingScreen: View {
     let retry: () -> Void
     var body: some View {
         ZStack {
-            LinearGradient(colors: [HubStyle.dark, HubStyle.blue], startPoint: .topLeading, endPoint: .bottomTrailing).ignoresSafeArea()
-            VStack(spacing: 22) {
-                Image(systemName: "wifi").font(.system(size: 58, weight: .bold)).foregroundStyle(.white).frame(width: 120, height: 120).background(.white.opacity(0.14), in: RoundedRectangle(cornerRadius: 32))
-                Text("conecte max").font(.system(size: 34, weight: .bold)).foregroundStyle(.white)
-                Text(error == nil ? "Preparando tudo para você" : "Não foi possível carregar suas informações").font(.title3).foregroundStyle(.white).multilineTextAlignment(.center)
-                if error == nil { ProgressView().tint(HubStyle.orange); Text("Só um instante…").foregroundStyle(.white.opacity(0.76)) }
-                else { Text(error!).foregroundStyle(.white.opacity(0.78)).multilineTextAlignment(.center); Button("Tentar novamente", action: retry).buttonStyle(PrimaryButton()) }
-            }.padding(34)
+            HubStyle.blue.ignoresSafeArea()
+            GeometryReader { proxy in
+                VStack(spacing: 0) {
+                    Spacer().frame(height: proxy.size.height * 0.34)
+                    Image("ConecteLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: min(proxy.size.width - 72, 350))
+                        .accessibilityLabel("Conecte Max")
+                    Spacer().frame(height: 56)
+                    Text(error == nil ? "Preparando tudo para você" : "Não foi possível carregar suas informações")
+                        .font(.system(size: 29, weight: .regular))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 26)
+                    Spacer().frame(height: 76)
+                    if error == nil {
+                        ProgressView()
+                            .controlSize(.large)
+                            .tint(HubStyle.orange)
+                        Spacer().frame(height: 42)
+                        Text("Só um instante…")
+                            .font(.title3)
+                            .foregroundStyle(.white.opacity(0.76))
+                    } else {
+                        Text(error!)
+                            .foregroundStyle(.white.opacity(0.78))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 34)
+                        Spacer().frame(height: 22)
+                        Button("Tentar novamente", action: retry)
+                            .buttonStyle(PrimaryButton())
+                            .padding(.horizontal, 34)
+                    }
+                    Spacer()
+                }
+                .frame(width: proxy.size.width, height: proxy.size.height)
+            }
         }
     }
 }
