@@ -106,7 +106,9 @@ struct ModuleScreen: View {
 }
 struct ProfileScreen: View {
     @Bindable var model: HubModel
-    @State private var current = "", password = "", confirmation = ""
+    @State private var current = ""
+    @State private var password = ""
+    @State private var confirmation = ""
     var body: some View {
         ScrollView { VStack(alignment: .leading, spacing: 20) {
             Text("Meu perfil").font(.largeTitle.bold())

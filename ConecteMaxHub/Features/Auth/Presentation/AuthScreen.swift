@@ -2,7 +2,10 @@ import SwiftUI
 
 struct AuthScreen: View {
     @Bindable var model: HubModel
-    @State private var cpf = "", password = "", confirmation = "", code = ""
+    @State private var cpf = ""
+    @State private var password = ""
+    @State private var confirmation = ""
+    @State private var code = ""
     private var title: String {
         switch model.stage {
         case "password": "Bem-vindo de volta"
